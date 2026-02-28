@@ -1,4 +1,4 @@
-langchain
+langchain_classic
 langgraph
 haystack
 dotenv
