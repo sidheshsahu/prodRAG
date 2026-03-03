@@ -1,4 +1,5 @@
 langchain_classic
+langchain_community
 langgraph
-haystack
+haystack-ai
 dotenv
