@@ -3,3 +3,16 @@ langchain_community
 langgraph
 haystack-ai
 dotenv
+
+
+
+
+
+
+
+
+
+
+
+
+
