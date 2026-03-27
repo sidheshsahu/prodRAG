@@ -1,0 +1,14 @@
+[project]
+name = "prodrag"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "haystack-ai>=2.26.1",
+    "langchain-classic>=1.0.3",
+    "langchain-core>=1.2.22",
+    "pinecone-haystack>=6.1.2",
+    "pypdf>=6.9.2",
+    "sentence-transformers>=5.3.0",
+]
