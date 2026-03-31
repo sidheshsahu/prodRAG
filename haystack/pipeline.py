@@ -47,8 +47,6 @@ documents_with_embeddings = embedder.run(docs_split)['documents']
 
 document_store.write_documents(documents_with_embeddings)
 
-
-
 prompt_template = """
 According to the contents:
 {% for document in documents %}
@@ -57,8 +55,6 @@ According to the contents:
 Answer the given question: {{query}}
 Answer:
 """
-
-
 
 prompt_builder = PromptBuilder(template=prompt_template)
 
@@ -69,8 +65,6 @@ llm = OpenAIGenerator(
     model="llama-3.1-8b-instant",
     generation_kwargs = {"max_tokens": 512}
 )
-
-
 
 
 query_pipeline = Pipeline()
