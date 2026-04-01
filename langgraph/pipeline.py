@@ -129,7 +129,7 @@ app=workflow.compile()
 
 
 result=app.invoke({
-"messages":[HumanMessage(content=("What is module 3?"))]
+"messages":[HumanMessage(content=("What is objectives?"))]
     })
 
 
