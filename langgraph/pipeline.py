@@ -17,9 +17,14 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 import os
 from langgraph.prebuilt import ToolNode,tools_condition
-
+from langfuse import get_client
+from langfuse.langchain import CallbackHandler
 
 load_dotenv()
+
+langfuse = get_client()
+langfuse_handler = CallbackHandler()
+
 
 file_path = r"D:\ProdRAG\prodRAG\Blockchain_Course_Proposal.pdf"
 loader = PyPDFLoader(file_path)
@@ -130,7 +135,8 @@ app=workflow.compile()
 
 result=app.invoke({
 "messages":[HumanMessage(content=("What is objectives?"))]
-    })
+    },
+    config={"callbacks": [langfuse_handler]})
 
 
 print(result["messages"][-1].content)
