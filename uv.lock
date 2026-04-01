@@ -1248,6 +1248,20 @@ wheels = [
 ]
 
 [[package]]
+name = "langchain"
+version = "1.2.14"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "langchain-core" },
+    { name = "langgraph" },
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/af/2b/0ca77ee988a9f1c1f1d923115d7c91221ab434067bc36f2f637201aeee81/langchain-1.2.14.tar.gz", hash = "sha256:fc5511e8f8af7efee9e5a144da4392d700d627b301d240470db97272940ad317", size = 574190, upload-time = "2026-03-31T13:50:37.398Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4c/87/324ae5fd9993f024339a452fc89e3fd808bccde87ef95c8dafab3de023c0/langchain-1.2.14-py3-none-any.whl", hash = "sha256:96da6d7338d5a6fc41eb4ec0db83f7ef5d03bb5efd17bb269f34ba4378ebdb4d", size = 112715, upload-time = "2026-03-31T13:50:35.997Z" },
+]
+
+[[package]]
 name = "langchain-classic"
 version = "1.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -2137,7 +2151,7 @@ name = "pexpect"
 version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ptyprocess" },
+    { name = "ptyprocess", marker = "sys_platform != 'emscripten' and sys_platform != 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/42/92/cc564bf6381ff43ce1f4d06852fc19a2f11d180f23dc32d9588bee2f149d/pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f", size = 166450, upload-time = "2023-11-25T09:07:26.339Z" }
 wheels = [
@@ -2323,12 +2337,14 @@ dependencies = [
     { name = "google-genai-haystack" },
     { name = "haystack-ai" },
     { name = "ipykernel" },
+    { name = "langchain" },
     { name = "langchain-classic" },
     { name = "langchain-community" },
     { name = "langchain-core" },
     { name = "langchain-google-genai" },
     { name = "langchain-groq" },
     { name = "langchain-pinecone" },
+    { name = "langfuse" },
     { name = "langfuse-haystack" },
     { name = "langgraph" },
     { name = "langsmith" },
@@ -2342,12 +2358,14 @@ requires-dist = [
     { name = "google-genai-haystack", specifier = ">=3.11.0" },
     { name = "haystack-ai", specifier = ">=2.26.1" },
     { name = "ipykernel", specifier = ">=7.2.0" },
+    { name = "langchain", specifier = ">=1.2.14" },
     { name = "langchain-classic", specifier = ">=1.0.3" },
     { name = "langchain-community", specifier = ">=0.4.1" },
     { name = "langchain-core", specifier = ">=1.2.22" },
     { name = "langchain-google-genai", specifier = ">=4.2.1" },
     { name = "langchain-groq", specifier = ">=1.1.2" },
     { name = "langchain-pinecone", specifier = ">=0.2.13" },
+    { name = "langfuse", specifier = ">=3.14.5" },
     { name = "langfuse-haystack", specifier = ">=4.1.0" },
     { name = "langgraph", specifier = ">=1.1.3" },
     { name = "langsmith", specifier = ">=0.7.22" },
