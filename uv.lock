@@ -2087,6 +2087,7 @@ dependencies = [
     { name = "langchain-pinecone" },
     { name = "langfuse-haystack" },
     { name = "langgraph" },
+    { name = "langsmith" },
     { name = "pinecone-haystack" },
     { name = "pypdf" },
 ]
@@ -2104,6 +2105,7 @@ requires-dist = [
     { name = "langchain-pinecone", specifier = ">=0.2.13" },
     { name = "langfuse-haystack", specifier = ">=4.1.0" },
     { name = "langgraph", specifier = ">=1.1.3" },
+    { name = "langsmith", specifier = ">=0.7.22" },
     { name = "pinecone-haystack", specifier = ">=6.1.2" },
     { name = "pypdf", specifier = ">=6.9.2" },
 ]

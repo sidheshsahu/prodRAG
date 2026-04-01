@@ -18,18 +18,13 @@ converter=PyPDFToDocument()
 
 docs = converter.run(sources=[Path(r"../Blockchain_Course_Proposal.pdf")])['documents']
 
-
-
 splitter=DocumentSplitter(
     split_by="word",
     split_length=10,
     split_overlap=0,
 )
 
-
 docs_split = splitter.run(documents=docs)['documents']
-
-
 
 
 document_store = PineconeDocumentStore(
