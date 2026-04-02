@@ -26,7 +26,7 @@ llm = ChatGroq(
 
 
 pc=Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
-index_name = "practice" 
+index_name = "practice-rag" 
 
 if not pc.has_index(index_name):
     pc.create_index(
@@ -94,4 +94,6 @@ parser=StrOutputParser()
 
 output=rag_chain | rag_prompt | llm | parser
 
-output.invoke("What is 4th module?")
+result=output.invoke("What is outcome from proposal?")
+
+print(result)
