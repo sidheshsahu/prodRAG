@@ -134,9 +134,9 @@ app=workflow.compile()
 
 
 result=app.invoke({
-"messages":[HumanMessage(content=("What is objectives?"))]
-    },
-    config={"callbacks": [langfuse_handler]})
+"messages":[HumanMessage(content=("What is future scope?"))]
+    })
+    # config={"callbacks": [langfuse_handler]})
 
 
 print(result["messages"][-1].content)
