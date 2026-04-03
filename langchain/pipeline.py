@@ -13,8 +13,9 @@ from langchain_core.runnables import (
     RunnablePassthrough,
     RunnableLambda,
 )
-from core.doc_store import create_index
-from core.prompt_template import template
+from core.doc_store import create_index_1, create_index_2
+from core.llm_call import llm_1, llm_2
+from core.prompt_template import template_1, template_2
 from langchain_groq import ChatGroq
 from langchain_core.output_parsers import StrOutputParser
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
@@ -41,7 +42,7 @@ def rag_pipeline(query, file_path):
     )
 
     vectorstore = PineconeVectorStore.from_documents(
-        texts, embedder, index_name=create_index()
+        texts, embedder, index_name=create_index_1()
     )
 
     retriever = vectorstore.as_retriever(
@@ -56,6 +57,14 @@ def rag_pipeline(query, file_path):
     )
 
     parser = StrOutputParser()
-    output = rag_chain | template() | llm | parser
+    output = rag_chain | template_1() | llm_1() | parser
     result = output.invoke("What is outcome from proposal?")
     return result
+
+
+output = rag_pipeline(
+    "Waht is blockchain?", "D:\ProdRAG\prodRAG\Blockchain_Course_Proposal.pdf"
+)
+
+
+print(output)

@@ -2,125 +2,124 @@ from langgraph.graph import StateGraph, START, END, add_messages
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from typing import TypedDict, Annotated, List
 from dotenv import load_dotenv
-from langchain_groq import ChatGroq
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_pinecone import PineconeVectorStore
-from langchain_core.prompts import PromptTemplate
+from langchain_core.tools import tool
+from langgraph.prebuilt import ToolNode, tools_condition
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from pinecone import ServerlessSpec, Pinecone
-from dotenv import load_dotenv
-from langchain_core.tools import tool
-from langchain_core.prompts import PromptTemplate
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
-import os
-from langgraph.prebuilt import ToolNode, tools_condition
-from langfuse import get_client
-from langfuse.langchain import CallbackHandler
+from langchain_pinecone import PineconeVectorStore
+from core.doc_store import create_index_1
+from core.llm_call import llm_1
 
 load_dotenv()
 
-langfuse = get_client()
-langfuse_handler = CallbackHandler()
+
+# ---------------- STATE ----------------
+class RAGState(TypedDict):
+    messages: Annotated[List[BaseMessage], add_messages]
+    file_path: str
 
 
-file_path = r"D:\ProdRAG\prodRAG\Blockchain_Course_Proposal.pdf"
-loader = PyPDFLoader(file_path)
-documents = loader.load()
-
-
-pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
-index_name = "practice-rag"
-
-if not pc.has_index(index_name):
-    pc.create_index(
-        name=index_name,
-        dimension=384,
-        metric="cosine",
-        serverless=ServerlessSpec(cloud="aws", region="us-east-1"),
-    )
-
-index = pc.Index(index_name)
-
-rag_prompt = PromptTemplate.from_template(
-    template="""You are a helpful assistant.
-Use ONLY the provided context to answer the question. This is critical.
-If the answer is not present in the context, say: "I don't know based on the provided context."
-
-Context:
-{context}
-
-Question:
-{question}
-
-Answer:"""
-)
-
-llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0.7)
-
-
+# ---------------- UTIL ----------------
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
 
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
-texts = text_splitter.split_documents(documents)
+# ---------------- RETRIEVER (NO GLOBAL STATE) ----------------
+def rag_retriever(query: str, file_path: str):
+    loader = PyPDFLoader(file_path)
+    documents = loader.load()
 
-embedder = GoogleGenerativeAIEmbeddings(
-    model="gemini-embedding-2-preview", output_dimensionality=384
-)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+    texts = splitter.split_documents(documents)
+
+    embedder = GoogleGenerativeAIEmbeddings(
+        model="gemini-embedding-2-preview", output_dimensionality=384
+    )
+
+    vectorstore = PineconeVectorStore.from_documents(
+        texts, embedder, index_name=create_index_1
+    )
+
+    retriever = vectorstore.as_retriever(
+        search_type="similarity", search_kwargs={"k": 3}
+    )
+
+    return retriever
 
 
-vectorstore = PineconeVectorStore.from_documents(texts, embedder, index_name=index_name)
-
-
-retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 3})
-
-
+# ---------------- TOOL (DYNAMIC INPUT FIXED) ----------------
 @tool
-def rag_tool(query: str) -> str:
-    """A tool that retrieves relevant information from the PDF based on a user query.
-    Use this tool when the user asks factual/conceptual questions that might be answered from the stored documents.
+def rag_tool(state: dict) -> str:
     """
-    docs = retriever.invoke(query)
-    context = format_docs(docs)
+    Retrieves relevant context from PDF based on latest user query.
+    """
+    query = state["query"]
+    file_path = state["file_path"]
 
-    return context
+    retriever = rag_retriever(query, file_path)
+    docs = retriever.invoke(query)
+
+    return format_docs(docs)
 
 
 tools = [rag_tool]
-llm_with_tools = llm.bind_tools(tools)
-
 tool_node = ToolNode(tools)
 
+llm = llm_1()
+llm_with_tools = llm.bind_tools(tools)
 
-class RAGState(TypedDict):
-    messages: Annotated[List[BaseMessage], add_messages]
 
-
+# ---------------- CHAT NODE ----------------
 def chat_rag(state: RAGState):
-    system_prompt = """You are a helpful assistant. When you use the rag_tool, carefully read the context it returns and base your answer ONLY on that context.
-If the context doesn't contain the answer, say 'I don't know based on the provided context.' Do NOT use your general knowledge if the tool provides information."""
+    system_prompt = """
+You are a helpful assistant.
 
-    messages_with_system = [SystemMessage(content=system_prompt)] + state["messages"]
+Use rag_tool when needed.
+Always base answers only on retrieved context.
+If context is insufficient, say: "I don't know based on the provided context."
+"""
 
-    response = llm_with_tools.invoke(messages_with_system)
+    messages = [SystemMessage(content=system_prompt)] + state["messages"]
+
+    response = llm_with_tools.invoke(messages)
     return {"messages": [response]}
 
 
-workflow = StateGraph(RAGState)
-workflow.add_node("chat_rag", chat_rag)
-workflow.add_node("tools", tool_node)
-workflow.add_edge(START, "chat_rag")
-workflow.add_conditional_edges(
-    "chat_rag", tools_condition, {"tools": "tools", END: END}
-)
-workflow.add_edge("tools", "chat_rag")
+# ---------------- WORKFLOW ----------------
+def build_workflow():
+    workflow = StateGraph(RAGState)
 
-app = workflow.compile()
+    workflow.add_node("chat_rag", chat_rag)
+    workflow.add_node("tools", tool_node)
+
+    workflow.add_edge(START, "chat_rag")
+
+    workflow.add_conditional_edges(
+        "chat_rag", tools_condition, {"tools": "tools", END: END}
+    )
+
+    workflow.add_edge("tools", "chat_rag")
+
+    return workflow.compile()
 
 
-result = app.invoke({"messages": [HumanMessage(content=("What is future scope?"))]})
+# ---------------- FINAL RUN FUNCTION ----------------
+def run_rag(query: str, file_path: str):
+    app = build_workflow()
+
+    result = app.invoke(
+        {"messages": [HumanMessage(content=query)], "file_path": file_path}
+    )
+
+    return result["messages"][-1].content
 
 
-print(result["messages"][-1].content)
+# ---------------- TEST CALL (YOUR "LAST CALL") ----------------
+if __name__ == "__main__":
+    answer = run_rag(
+        query="What are the main topics covered in the document?",
+        file_path="D:\ProdRAG\prodRAG\Blockchain_Course_Proposal.pdf",
+    )
+
+    print("\n🔹 FINAL ANSWER:\n", answer)

@@ -29,8 +29,8 @@ def rag_pipeline(query, pdf_path):
 
     splitter = DocumentSplitter(
         split_by="word",
-        split_length=10,
-        split_overlap=0,
+        split_length=500,
+        split_overlap=50,
     )
 
     docs_split = splitter.run(documents=docs)["documents"]
