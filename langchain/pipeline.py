@@ -14,6 +14,7 @@ from langchain_core.runnables import (
     RunnableLambda,
 )
 from core.doc_store import create_index
+from core.prompt_template import template
 from langchain_groq import ChatGroq
 from langchain_core.output_parsers import StrOutputParser
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
@@ -26,21 +27,6 @@ def format_docs(docs):
 
 
 llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0.7)
-
-
-rag_prompt = PromptTemplate.from_template(
-    template="""You are a helpful assistant.
-Use only the provided context to answer the question.
-If the answer is not present in the context, say: "I don't know based on the provided context."
-
-Context:
-{context}
-
-Question:
-{question}
-
-Answer:"""
-)
 
 
 def rag_pipeline(query, file_path):
@@ -70,6 +56,6 @@ def rag_pipeline(query, file_path):
     )
 
     parser = StrOutputParser()
-    output = rag_chain | rag_prompt | llm | parser
+    output = rag_chain | template() | llm | parser
     result = output.invoke("What is outcome from proposal?")
     return result
