@@ -1,5 +1,5 @@
 from langgraph.graph import StateGraph,START, END,add_messages
-from langchain_core.messages import BaseMessage,HumanMessage
+from langchain_core.messages import BaseMessage,HumanMessage,SystemMessage
 from typing import TypedDict,Annotated,List
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
@@ -46,7 +46,7 @@ index = pc.Index(index_name)
 
 rag_prompt = PromptTemplate.from_template(
    template= """You are a helpful assistant.
-Use only the provided context to answer the question.
+Use ONLY the provided context to answer the question. This is critical.
 If the answer is not present in the context, say: "I don't know based on the provided context."
 
 Context:
@@ -83,26 +83,15 @@ retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k
 
 
 @tool
-def rag_tool(query: str) -> dict:
-    '''A tool that takes a user query, retrieves relevant information from the PDF, and returns an answer based on the retrieved context.
+def rag_tool(query: str) -> str:
+    '''A tool that retrieves relevant information from the PDF based on a user query.
     Use this tool when the user asks factual/conceptual questions that might be answered from the stored documents.'''
     
     # Retrieve similar chunks from the vectorstore
     docs = retriever.invoke(query)
     context = format_docs(docs)
     
-    # Generate answer using the context
-    rag_chain = RunnableParallel({
-        "question": RunnablePassthrough(),
-        "context": RunnableLambda(lambda x: context)
-    })
-    
-    output = (rag_chain | rag_prompt | llm | StrOutputParser()).invoke(query)
-    
-    return {
-        "query": query,
-        "output": output
-    }
+    return context
 
 
 tools=[rag_tool]
@@ -114,8 +103,15 @@ class RAGState(TypedDict):
     messages:Annotated[List[BaseMessage],add_messages]
 
 def chat_rag(state:RAGState):
-    response=llm_with_tools.invoke(state["messages"])
-    return {"messages":[response]}
+    # Create a system message that instructs the LLM to use tool results
+    system_prompt = """You are a helpful assistant. When you use the rag_tool, carefully read the context it returns and base your answer ONLY on that context.
+If the context doesn't contain the answer, say 'I don't know based on the provided context.' Do NOT use your general knowledge if the tool provides information."""
+    
+    # Prepare messages with system context
+    messages_with_system = [SystemMessage(content=system_prompt)] + state["messages"]
+    
+    response = llm_with_tools.invoke(messages_with_system)
+    return {"messages": [response]}
 
 
 workflow=StateGraph(RAGState)
