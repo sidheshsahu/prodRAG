@@ -23,9 +23,6 @@ class RAGState(TypedDict):
     file_path: str
 
 
-_state = {"file_path": ""}
-
-
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
@@ -59,6 +56,9 @@ def rag_tool(query: str, file_path: str) -> str:
     return format_docs(docs)
 
 
+tools = [rag_tool]
+
+
 def custom_tool_node(state: RAGState):
     messages = state["messages"]
     file_path = state["file_path"]
@@ -74,19 +74,14 @@ def custom_tool_node(state: RAGState):
     return {"messages": tool_results}
 
 
-tools = [rag_tool]
-
-
 def chat_rag(state: RAGState):
-    _state["file_path"] = state["file_path"]
-
     llm = llm_1()
     llm_with_tools = llm.bind_tools(tools)
 
     system_prompt = """
     You are a helpful assistant.
-    Use rag_tool when needed.
-    Always answers only on retrieved context.
+    Use rag_tool when the user asks factual questions.
+    Always answer only on retrieved context.
     If context is insufficient, say: "I don't know based on the provided context."
     """
     messages = [SystemMessage(content=system_prompt)] + state["messages"]
@@ -98,7 +93,7 @@ def build_workflow():
     workflow = StateGraph(RAGState)
 
     workflow.add_node("chat_rag", chat_rag)
-    workflow.add_node("tools", custom_tool_node)  # ✅ only this changes
+    workflow.add_node("tools", custom_tool_node)
 
     workflow.add_edge(START, "chat_rag")
     workflow.add_conditional_edges(
@@ -114,12 +109,13 @@ def run_rag(query: str, file_path: str):
     result = app.invoke(
         {"messages": [HumanMessage(content=query)], "file_path": file_path}
     )
+    print(result)
     return result["messages"][-1].content
 
 
 if __name__ == "__main__":
     answer = run_rag(
-        query="What is module 1 and module 2?",
+        query="What is future scope?",
         file_path=r"D:\ProdRAG\prodRAG\Blockchain_Course_Proposal.pdf",
     )
     print("\n FINAL ANSWER:\n", answer)
