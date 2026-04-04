@@ -34,32 +34,40 @@ def main():
     st.set_page_config(page_title="ProdRAG Streamlit", page_icon="📄")
     st.title("ProdRAG RAG Query Interface")
     st.markdown(
-        "Use this app to ask questions over a PDF document with Langchain, Langgraph, or Haystack."
+        "Use the section for the backend you want to query. Each backend has its own query and PDF upload form."
     )
 
-    backend = st.selectbox("Select backend", list(BACKENDS.keys()))
-    query = st.text_input("Query")
-    uploaded_file = st.file_uploader(
-        "Upload a PDF document", type=["pdf"], accept_multiple_files=False
-    )
+    cols = st.columns(3)
 
-    if st.button("Run"):
-        if not query:
-            st.error("Please enter a query.")
-            return
-        if uploaded_file is None:
-            st.error("Please upload a PDF document.")
-            return
+    for backend_name, col in zip(BACKENDS.keys(), cols):
+        with col:
+            st.subheader(backend_name)
+            with st.form(key=f"form_{backend_name}"):
+                query = st.text_input("Query", key=f"query_{backend_name}")
+                uploaded_file = st.file_uploader(
+                    "Upload a PDF document",
+                    type=["pdf"],
+                    accept_multiple_files=False,
+                    key=f"upload_{backend_name}",
+                )
+                submit = st.form_submit_button("Run")
 
-        with st.spinner(f"Running {backend}... this may take a moment."):
-            try:
-                file_path = save_uploaded_pdf(uploaded_file)
-                answer = run_pipeline(backend, query, file_path)
-                st.success("Answer generated")
-                st.subheader("Result")
-                st.write(answer)
-            except Exception as exc:
-                st.error(f"Pipeline error: {exc}")
+                if submit:
+                    if not query:
+                        st.error("Please enter a query.")
+                    elif uploaded_file is None:
+                        st.error("Please upload a PDF document.")
+                    else:
+                        with st.spinner(
+                            f"Running {backend_name}... this may take a moment."
+                        ):
+                            try:
+                                file_path = save_uploaded_pdf(uploaded_file)
+                                answer = run_pipeline(backend_name, query, file_path)
+                                st.success("Answer generated")
+                                st.write(answer)
+                            except Exception as exc:
+                                st.error(f"Pipeline error: {exc}")
 
 
 if __name__ == "__main__":
