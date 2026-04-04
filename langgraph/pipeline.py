@@ -115,7 +115,7 @@ def run_rag(query: str, file_path: str):
 
 if __name__ == "__main__":
     answer = run_rag(
-        query="What is future scope?",
+        query="What is future scope of proposal?",
         file_path=r"D:\ProdRAG\prodRAG\Blockchain_Course_Proposal.pdf",
     )
     print("\n FINAL ANSWER:\n", answer)
