@@ -16,7 +16,7 @@ def llm_2():
     llm = OpenAIGenerator(
         api_key=Secret.from_env_var("GROQ_API_KEY"),
         api_base_url="https://api.groq.com/openai/v1",
-        model="llama-3.1-8b-instant",
+        model="llama-3.3-70b-versatile",
         generation_kwargs={"max_tokens": 512},
     )
     return llm

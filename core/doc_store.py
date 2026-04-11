@@ -1,5 +1,4 @@
-from pinecone import ServerlessSpec, Pinecone
-import os
+
 from haystack_integrations.document_stores.pinecone import PineconeDocumentStore
 
 

@@ -30,44 +30,79 @@ def run_pipeline(backend_name: str, query: str, file_path: str):
     )
 
 
+def init_results_state():
+    if "backend_results" not in st.session_state:
+        st.session_state.backend_results = {
+            name: {"answer": "", "error": ""} for name in BACKENDS
+        }
+
+
 def main():
     st.set_page_config(page_title="ProdRAG Streamlit", page_icon="📄")
     st.title("ProdRAG RAG Query Interface")
     st.markdown(
-        "Use the section for the backend you want to query. Each backend has its own query and PDF upload form."
+        "Enter your query and upload a PDF, then run each backend individually."
     )
+    init_results_state()
+
+    query = st.text_input(
+        "Query",
+        placeholder="Enter your question here",
+        key="query_input",
+    )
+    uploaded_file = st.file_uploader(
+        "Upload PDF",
+        type=["pdf"],
+        key="pdf_uploader",
+        help="Choose a PDF from your local machine.",
+    )
+    resolved_file_path = save_uploaded_pdf(uploaded_file) if uploaded_file else ""
+    if uploaded_file:
+        st.caption(f"Using uploaded file: `{uploaded_file.name}`")
 
     cols = st.columns(3)
 
     for backend_name, col in zip(BACKENDS.keys(), cols):
         with col:
-            st.subheader(backend_name)
-            with st.form(key=f"form_{backend_name}"):
-                query = st.text_input("Query", key=f"query_{backend_name}")
-                uploaded_file = st.file_uploader(
-                    "Upload a PDF document",
-                    type=["pdf"],
-                    accept_multiple_files=False,
-                    key=f"upload_{backend_name}",
-                )
-                submit = st.form_submit_button("Run")
-
-                if submit:
+            with st.container(border=True):
+                st.subheader(backend_name)
+                if st.button(f"Run {backend_name}", key=f"run_{backend_name}"):
                     if not query:
-                        st.error("Please enter a query.")
-                    elif uploaded_file is None:
-                        st.error("Please upload a PDF document.")
+                        st.session_state.backend_results[backend_name] = {
+                            "answer": "",
+                            "error": "Please enter a query.",
+                        }
+                    elif not resolved_file_path:
+                        st.session_state.backend_results[backend_name] = {
+                            "answer": "",
+                            "error": "Please upload a PDF.",
+                        }
                     else:
                         with st.spinner(
                             f"Running {backend_name}... this may take a moment."
                         ):
                             try:
-                                file_path = save_uploaded_pdf(uploaded_file)
-                                answer = run_pipeline(backend_name, query, file_path)
-                                st.success("Answer generated")
-                                st.write(answer)
+                                answer = run_pipeline(
+                                    backend_name, query, resolved_file_path
+                                )
+                                st.session_state.backend_results[backend_name] = {
+                                    "answer": answer,
+                                    "error": "",
+                                }
                             except Exception as exc:
-                                st.error(f"Pipeline error: {exc}")
+                                st.session_state.backend_results[backend_name] = {
+                                    "answer": "",
+                                    "error": f"Pipeline error: {exc}",
+                                }
+
+                result = st.session_state.backend_results[backend_name]
+                if result["error"]:
+                    st.error(result["error"])
+                elif result["answer"]:
+                    st.success("Answer generated")
+                    st.write(result["answer"])
+                else:
+                    st.info("No answer yet. Click Run.")
 
 
 if __name__ == "__main__":
