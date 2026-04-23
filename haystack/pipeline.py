@@ -10,6 +10,10 @@ from haystack_integrations.components.embedders.google_genai import (
     GoogleGenAIDocumentEmbedder,
     GoogleGenAITextEmbedder,
 )
+from haystack.components.embedders import (
+    SentenceTransformersDocumentEmbedder,
+    SentenceTransformersTextEmbedder,
+)
 from dotenv import load_dotenv
 from haystack_integrations.components.retrievers.pinecone import (
     PineconeEmbeddingRetriever,
@@ -35,7 +39,10 @@ def rag_pipeline(query, pdf_path):
 
     docs_split = splitter.run(documents=docs)["documents"]
 
-    embedder = GoogleGenAIDocumentEmbedder(api="gemini")
+    # embedder = GoogleGenAIDocumentEmbedder(api="gemini")
+    embedder = SentenceTransformersDocumentEmbedder(
+        model="sentence-transformers/all-MiniLM-L6-v2"
+    )
 
     documents_with_embeddings = embedder.run(docs_split)["documents"]
 

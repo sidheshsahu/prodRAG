@@ -22,5 +22,6 @@ dependencies = [
     "langsmith[claude-agent-sdk]>=0.7.22",
     "pinecone-haystack>=6.1.2",
     "pypdf>=6.9.2",
+    "sentence-transformers",
     "streamlit>=1.44.1",
 ]
