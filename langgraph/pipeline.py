@@ -9,6 +9,7 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_pinecone import PineconeVectorStore
 from langchain_groq import ChatGroq
+from langchain_huggingface import HuggingFaceEmbeddings
 from core.doc_store import create_index_1
 from core.llm_call import llm_1
 from core.prompt_template import template_1
@@ -34,8 +35,8 @@ def rag_retriever(query: str, file_path: str):
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
     texts = splitter.split_documents(documents)
 
-    embedder = GoogleGenerativeAIEmbeddings(
-        model="gemini-embedding-2-preview", output_dimensionality=384
+    embedder = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
 
     vectorstore = PineconeVectorStore.from_documents(
