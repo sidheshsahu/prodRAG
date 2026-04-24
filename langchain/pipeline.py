@@ -19,6 +19,8 @@ from core.prompt_template import template_1, template_2
 from langchain_groq import ChatGroq
 from langchain_core.output_parsers import StrOutputParser
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
+
 
 load_dotenv()
 
@@ -37,8 +39,11 @@ def rag_pipeline(query, file_path):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
     texts = text_splitter.split_documents(documents)
 
-    embedder = GoogleGenerativeAIEmbeddings(
-        model="gemini-embedding-2-preview", output_dimensionality=384
+    # embedder = GoogleGenerativeAIEmbeddings(
+    #     model="gemini-embedding-2-preview", output_dimensionality=384
+    # )
+    embedder = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
 
     vectorstore = PineconeVectorStore.from_documents(
