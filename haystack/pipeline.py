@@ -62,9 +62,14 @@ def rag_pipeline(query, pdf_path):
     query_pipeline.connect("text_embedder.embedding", "retriever.query_embedding")
     query_pipeline.connect("retriever.documents", "prompt.documents")
     query_pipeline.connect("prompt", "llm")
-    query = "What are the main topics covered in the document?"
+    query = "Explain the summary of each modules?"
     result = query_pipeline.run(
         {"text_embedder": {"text": query}, "prompt": {"query": query}}
     )
-
     return result["llm"]["replies"][0]
+
+
+res = rag_pipeline(
+    "Explain the summary of each modules?", r"D:\ProdRAG\prodRAG\example.pdf"
+)
+print(res)

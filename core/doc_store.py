@@ -1,5 +1,6 @@
-
 from haystack_integrations.document_stores.pinecone import PineconeDocumentStore
+from pinecone import ServerlessSpec, Pinecone
+import os
 
 
 def create_index_1():
@@ -22,7 +23,7 @@ def create_index_2():
     document_store = PineconeDocumentStore(
         index="practice",
         metric="cosine",
-        dimension=3072,
+        dimension=384,
         spec={"serverless": {"region": "us-east-1", "cloud": "aws"}},
     )
     return document_store
