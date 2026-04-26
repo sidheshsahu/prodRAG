@@ -21,7 +21,7 @@ def create_index_1():
 
 def create_index_2():
     document_store = PineconeDocumentStore(
-        index="practice",
+        index="random",
         metric="cosine",
         dimension=384,
         spec={"serverless": {"region": "us-east-1", "cloud": "aws"}},

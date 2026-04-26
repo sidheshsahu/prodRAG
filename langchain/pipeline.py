@@ -63,12 +63,13 @@ def rag_pipeline(query, file_path):
 
     parser = StrOutputParser()
     output = rag_chain | template_1() | llm_1() | parser
-    result = output.invoke("What is outcome from proposal?")
+    result = output.invoke(query)
     return result
 
 
 output = rag_pipeline(
-    "Waht is blockchain?", "D:\ProdRAG\prodRAG\Blockchain_Course_Proposal.pdf"
+    "What is outcome from proposal?",
+    "D:\ProdRAG\prodRAG\example.pdf",
 )
 
 

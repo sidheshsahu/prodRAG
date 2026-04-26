@@ -55,7 +55,12 @@ def rag_pipeline(query, pdf_path):
     query_pipeline.add_component("tracer", LangfuseConnector("Basic RAG Pipeline"))
     query_pipeline.add_component("prompt", prompt_builder)
     query_pipeline.add_component("llm", llm_2())
-    query_pipeline.add_component("text_embedder", GoogleGenAITextEmbedder())
+    query_pipeline.add_component(
+        "text_embedder",
+        SentenceTransformersTextEmbedder(
+            model="sentence-transformers/all-MiniLM-L6-v2"
+        ),
+    )
     query_pipeline.add_component(
         "retriever", PineconeEmbeddingRetriever(document_store=document_store)
     )
