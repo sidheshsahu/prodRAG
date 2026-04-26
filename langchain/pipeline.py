@@ -20,9 +20,13 @@ from langchain_groq import ChatGroq
 from langchain_core.output_parsers import StrOutputParser
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_huggingface import HuggingFaceEmbeddings
-
+from langfuse import get_client
+from langfuse.langchain import CallbackHandler
 
 load_dotenv()
+
+langfuse = get_client()
+langfuse_handler = CallbackHandler()
 
 
 def format_docs(docs):
@@ -63,12 +67,12 @@ def rag_pipeline(query, file_path):
 
     parser = StrOutputParser()
     output = rag_chain | template_1() | llm_1() | parser
-    result = output.invoke(query)
+    result = output.invoke(query, config={"callbacks": [langfuse_handler]})
     return result
 
 
 output = rag_pipeline(
-    "What is outcome from proposal?",
+    "Explain the summary of each modules?",
     "D:\ProdRAG\prodRAG\example.pdf",
 )
 

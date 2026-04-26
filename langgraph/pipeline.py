@@ -42,7 +42,7 @@ def rag_retriever(query: str, file_path: str):
     vectorstore = PineconeVectorStore.from_documents(
         texts, embedder, index_name=create_index_1()
     )
-
+    # Adding retriever
     retriever = vectorstore.as_retriever(
         search_type="similarity", search_kwargs={"k": 3}
     )
