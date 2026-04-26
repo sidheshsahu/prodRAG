@@ -72,9 +72,3 @@ def rag_pipeline(query, pdf_path):
         {"text_embedder": {"text": query}, "prompt": {"query": query}}
     )
     return result["llm"]["replies"][0]
-
-
-res = rag_pipeline(
-    "Explain the summary of each modules?", r"D:\ProdRAG\prodRAG\example.pdf"
-)
-print(res)
