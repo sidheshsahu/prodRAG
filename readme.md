@@ -1,8 +1,8 @@
-# ProdRAG
+# FrameworkRAG
 
-ProdRAG is an experimental Retrieval-Augmented Generation (RAG) comparison project.
+FrameworkRAG is an experimental Retrieval-Augmented Generation (RAG) comparison project.
 
-This repository was built to explore multiple RAG frameworks side by side, understand how their pipelines differ, and evaluate tracing and observability workflows. It is not positioned as a production-ready system yet.
+This repository was built to explore multiple RAG frameworks side by side, understand how their pipelines differ, and evaluate tracing and observability workflows.
 
 ## What This Repo Covers
 
@@ -23,7 +23,7 @@ The goal of this project is to explore the RAG ecosystem in practice:
 - test end-to-end PDF question answering
 - understand retrieval + generation flow differences
 - experiment with tracing, monitoring, and observability
-- create a base that can later be hardened for production
+
 
 ## Current State
 
@@ -43,7 +43,7 @@ It is not yet fully productionized. Some code paths are still exploratory, and a
 ## Project Structure
 
 ```text
-prodRAG/
+FrameworkRAG/
 |-- app.py                  # Streamlit comparison UI
 |-- core/
 |   |-- doc_store.py        # Pinecone index/document store helpers
